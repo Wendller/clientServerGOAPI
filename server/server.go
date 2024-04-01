@@ -1,4 +1,4 @@
-package server
+package main
 
 import (
 	"database/sql"
@@ -18,7 +18,7 @@ type Error struct {
 	Message string `json:"message"`
 }
 
-func Run() {
+func main() {
 	cotationsDB, err := database.NewCotationsDB()
 	if err != nil {
 		log.Fatal(err)
@@ -32,7 +32,7 @@ func Run() {
 }
 
 func (h *CotationsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	cotation, err := services.GetUSDToBRL()
+	cotation, err := services.GetUSDToBRLCotation()
 	if err != nil {
 		error := Error{Message: err.Error()}
 

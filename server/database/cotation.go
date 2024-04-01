@@ -10,35 +10,42 @@ import (
 )
 
 type Cotation struct {
-	ID  string
-	Pid string
+	ID         string
+	Bid        string
+	InsertedAt string
 }
 
-func NewCotation(pid string) *Cotation {
+func NewCotation(bid string) *Cotation {
 	return &Cotation{
-		ID:  uuid.New().String(),
-		Pid: pid,
+		ID:         uuid.New().String(),
+		Bid:        bid,
+		InsertedAt: time.Now().String(),
 	}
 }
 
-func InsertCotation(db *sql.DB, pid string) error {
+func InsertCotation(db *sql.DB, bid string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Millisecond)
 	defer cancel()
 
-	id := uuid.New().String()
+	cotation := NewCotation(bid)
 
-	query, err := db.Prepare("INSERT INTO cotations(id, pid) values($1, $2)")
+	query, err := db.PrepareContext(ctx, "INSERT INTO cotations(id, bid, inserted_at) VALUES($1, $2, $3)")
 	if err != nil {
 		return err
 	}
 	defer query.Close()
 
-	_, err = query.ExecContext(ctx, id, pid)
+	_, err = query.ExecContext(ctx, cotation.ID, cotation.Bid, cotation.InsertedAt)
 	if err != nil {
+		if ctx.Err() == context.DeadlineExceeded {
+			log.Fatal("cotation raw insertion timeout reached")
+			return ctx.Err()
+		}
+
 		return err
 	}
 
-	log.Println("Cotation insertion executed successfully")
+	log.Println("cotation insertion executed successfully")
 
 	return nil
 }
