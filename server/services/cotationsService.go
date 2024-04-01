@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"time"
 )
 
 type USDBRLResponse struct {
@@ -19,7 +20,10 @@ type USDBRL struct {
 var USD_TO_BRL_URL string = "https://economia.awesomeapi.com.br/json/last/USD-BRL"
 var response USDBRLResponse
 
-func GetUSDToBRL(ctx context.Context) (*USDBRL, error) {
+func GetUSDToBRL() (*USDBRL, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 200*time.Millisecond)
+	defer cancel()
+
 	req, err := http.NewRequestWithContext(ctx, "GET", USD_TO_BRL_URL, nil)
 	if err != nil {
 		return nil, fmt.Errorf("request with context error: %v", err)

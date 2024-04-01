@@ -1,33 +1,38 @@
 package server
 
 import (
-	"context"
+	"database/sql"
 	"encoding/json"
+	"log"
 	"net/http"
-	"time"
 
 	"github.com/Wendller/clientServerAPI/server/database"
 	"github.com/Wendller/clientServerAPI/server/services"
 )
 
-var SERVER_PORT string = ":8080"
+type CotationsHandler struct {
+	DB *sql.DB
+}
 
 type Error struct {
 	Message string `json:"message"`
 }
 
-func Init() {
-	http.HandleFunc("/cotacao", GetCotationHandler)
-	http.ListenAndServe(SERVER_PORT, nil)
+func Run() {
+	cotationsDB, err := database.NewCotationsDB()
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer cotationsDB.Close()
+
+	mux := http.NewServeMux()
+	mux.Handle("/cotacao", &CotationsHandler{DB: cotationsDB})
+
+	log.Fatal(http.ListenAndServe(":8080", mux))
 }
 
-func GetCotationHandler(w http.ResponseWriter, r *http.Request) {
-	cotationsDB := database.NewCotationsDB().DB
-
-	ctx, cancel := context.WithTimeout(context.Background(), 200*time.Millisecond)
-	defer cancel()
-
-	cotation, err := services.GetUSDToBRL(ctx)
+func (h *CotationsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	cotation, err := services.GetUSDToBRL()
 	if err != nil {
 		error := Error{Message: err.Error()}
 
@@ -36,10 +41,7 @@ func GetCotationHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ctx, cancel = context.WithTimeout(context.Background(), 10*time.Millisecond)
-	defer cancel()
-
-	err = database.InsertCotation(ctx, cotationsDB, cotation.Bid)
+	err = database.InsertCotation(h.DB, cotation.Bid)
 	if err != nil {
 		error := Error{Message: err.Error()}
 

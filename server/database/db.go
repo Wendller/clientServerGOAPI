@@ -2,24 +2,20 @@ package database
 
 import (
 	"database/sql"
-	"log"
+	"fmt"
 
 	_ "github.com/mattn/go-sqlite3"
 )
 
-type CotationDB struct {
-	DB *sql.DB
-}
-
-func NewCotationsDB() *CotationDB {
-	db, err := sql.Open("sqlite3", "./cotations.db")
+func NewCotationsDB() (*sql.DB, error) {
+	db, err := sql.Open("sqlite3", "cotations.db")
 	if err != nil {
-		log.Fatalf("🔌 database connection failed: %v", err)
+		return nil, fmt.Errorf("🔌 database connection failed: %v", err)
 	}
 
 	if err := db.Ping(); err != nil {
-		log.Fatalf("⚠️ failed to ping database: %v", err)
+		return nil, fmt.Errorf("⚠️ failed to ping database: %v", err)
 	}
 
-	return &CotationDB{DB: db}
+	return db, nil
 }

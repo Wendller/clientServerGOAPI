@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"log"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -20,7 +21,10 @@ func NewCotation(pid string) *Cotation {
 	}
 }
 
-func InsertCotation(ctx context.Context, db *sql.DB, pid string) error {
+func InsertCotation(db *sql.DB, pid string) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Millisecond)
+	defer cancel()
+
 	id := uuid.New().String()
 
 	query, err := db.Prepare("INSERT INTO cotations(id, pid) values($1, $2)")
