@@ -29,6 +29,12 @@ O endpoint necessário gerado pelo server.go para este desafio será: /cotacao e
 
 No diretório do projeto
 
+Instale as dependências
+
+```bash
+  go mod tidy
+```
+
 Inicie o server
 
 ```bash
