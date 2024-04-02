@@ -29,7 +29,7 @@ func createTable(db *sql.DB) error {
 	query, err := db.Prepare(`
 		CREATE TABLE IF NOT EXISTS cotations (
 			id varchar(255) primary key,
-			pid varchar(80),
+			bid varchar(80),
 			inserted_at text
 		);
 	`)

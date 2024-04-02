@@ -12,7 +12,8 @@ import (
 )
 
 type CotationServerResponse struct {
-	Bid string `json:"bid"`
+	Bid     string `json:"bid"`
+	Message string `json:"message"`
 }
 
 var SERVER_LOCAL_URL string = "http://localhost:8080/cotacao"
@@ -45,6 +46,10 @@ func main() {
 		log.Fatal(err)
 	}
 
+	if res.Status != "200 OK" {
+		log.Fatalf("HTTP request server error: %v", response.Message)
+	}
+
 	file, err := os.Create("cotacao.txt")
 	if err != nil {
 		log.Fatal(err)
@@ -56,4 +61,6 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	fmt.Printf("Raw inserted for bid: %v\n", response.Bid)
 }
